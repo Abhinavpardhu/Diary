@@ -1,3 +1,5 @@
 from django.db import models
 
-# Create your models here.
+class page(models.Model):
+    DAT=models.DateTimeField("")
+    content=models.CharField(max_length=700)
