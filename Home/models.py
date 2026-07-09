@@ -1,5 +1,6 @@
 from django.db import models
+from django.utils import timezone
 
-class page(models.Model):
-    DAT=models.DateTimeField("")
-    content=models.CharField(max_length=700)
+class pag(models.Model):
+    DAT=models.DateField(default=timezone.now())
+    content=models.TextField(max_length=700)
