@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_unicorn',
     'Home',
     'authentication',
 ]
@@ -121,3 +122,15 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "Diary" / "static",
 ]
+
+# Media files (for user profile avatars)
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# Authentication settings
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "login"
+
+# Default primary key field type
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
