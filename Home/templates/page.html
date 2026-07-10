@@ -1,130 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Diary Entry</title>
+{% extends 'base.html' %}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+{% block title %}Create Entry{% endblock %}
 
-    <style>
-        body{
-            background:#f4f6f9;
-        }
-
-        .card{
-            border:none;
-            border-radius:18px;
-            box-shadow:0 12px 30px rgba(0,0,0,.08);
-        }
-
-        .form-control{
-            border-radius:12px;
-            padding:12px;
-        }
-
-        textarea{
-            resize:none;
-        }
-
-        h2{
-            font-weight:700;
-        }
-
-        .btn{
-            border-radius:12px;
-            padding:10px 25px;
-        }
-    </style>
-</head>
-<body>
-
+{% block content %}
 <div class="container py-5">
-
     <div class="row justify-content-center">
-
         <div class="col-lg-7">
-
-            <div class="card p-4">
-
+            <div class="card p-4 card-custom">
                 <h2 class="text-center mb-4">
                     ✍️ Create Diary Entry
                 </h2>
 
-                <form method="POST" action="/">
+                <form method="post" action="{% url 'page' %}">
                     {% csrf_token %}
 
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Title
-                        </label>
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+                    {% endif %}
 
-                        <input
-                            type="text"
-                            class="form-control"
-                            name="title"
-                            placeholder="Enter title"
-                            required>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Title</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">{{ form.title.errors|striptags }}</div>
+                        {% endif %}
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">
-                            Description
-                        </label>
-
-                        <textarea
-                            class="form-control"
-                            rows="6"
-                            name="description"
-                            placeholder="Write your thoughts..."
-                            required></textarea>
+                        <label class="form-label fw-semibold">Content</label>
+                        {{ form.content }}
+                        {% if form.content.errors %}
+                            <div class="invalid-feedback d-block">{{ form.content.errors|striptags }}</div>
+                        {% endif %}
                     </div>
 
                     <div class="row">
-
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-semibold">
-                                Date
-                            </label>
-
-                            <input
-                                type="date"
-                                class="form-control"
-                                name="date"
-                                >
+                            <label class="form-label fw-semibold">Mood</label>
+                            {{ form.mood }}
+                            {% if form.mood.errors %}
+                                <div class="invalid-feedback d-block">{{ form.mood.errors|striptags }}</div>
+                            {% endif %}
                         </div>
 
-                       
-
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Tags</label>
+                            {{ form.tags_input }}
+                            {% if form.tags_input.errors %}
+                                <div class="invalid-feedback d-block">{{ form.tags_input.errors|striptags }}</div>
+                            {% else %}
+                                <div class="form-text">Separate tags with commas (e.g. happy, travel).</div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-end gap-2 mt-3">
-
-                        <button
-                            type="reset"
-                            class="btn btn-outline-secondary">
-                            Reset
-                        </button>
-
-                        <button
-                            type="submit"
-                            class="btn btn-primary">
-                            Save Entry
-                        </button>
-
+                        <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                        <button type="submit" class="btn btn-primary">Save Entry</button>
                     </div>
-
                 </form>
-
             </div>
-
         </div>
-
     </div>
-
 </div>
+{% endblock %}
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-
-</body>
-</html>
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    try {
+        {% if form.title.errors %}
+            var el = document.getElementsByName('{{ form.title.html_name }}')[0]; if(el) el.classList.add('is-invalid');
+        {% endif %}
+        {% if form.content.errors %}
+            var el2 = document.getElementsByName('{{ form.content.html_name }}')[0]; if(el2) el2.classList.add('is-invalid');
+        {% endif %}
+        {% if form.mood.errors %}
+            var el3 = document.getElementsByName('{{ form.mood.html_name }}')[0]; if(el3) el3.classList.add('is-invalid');
+        {% endif %}
+        {% if form.tags_input.errors %}
+            var el4 = document.getElementsByName('{{ form.tags_input.html_name }}')[0]; if(el4) el4.classList.add('is-invalid');
+        {% endif %}
+    } catch(e) { console.warn('Validation script error', e); }
+});
+</script>
+{% endblock %}

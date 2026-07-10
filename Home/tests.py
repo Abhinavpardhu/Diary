@@ -1,4 +1,4 @@
-from django.test import TestCase, RequestFactory
+from django.test import TestCase, RequestFactory, Client
 from django.contrib.auth.models import User
 from django.utils import timezone
 from Home.models import DiaryEntry, Tag
@@ -115,3 +115,34 @@ class DashboardComponentTests(TestCase):
         
         # Check DB
         self.assertFalse(DiaryEntry.objects.filter(id=self.entry2.id).exists())
+
+
+class CreateEntryViewTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='creator', password='password')
+        self.client.login(username='creator', password='password')
+
+    def test_get_page_loads_form(self):
+        resp = self.client.get('/page/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Create Diary Entry')
+        self.assertContains(resp, 'name="title"')
+
+    def test_post_valid_creates_entry_and_tags(self):
+        data = {'title': 'A trip', 'content': 'Great day', 'mood': 'happy', 'tags_input': 'fun, travel'}
+        resp = self.client.post('/page/', data, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        entry = DiaryEntry.objects.filter(title='A trip').first()
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.user, self.user)
+        tag_names = set(t.name for t in entry.tags.all())
+        self.assertEqual(tag_names, {'fun', 'travel'})
+
+    def test_post_invalid_shows_errors_and_no_create(self):
+        data = {'title': '', 'content': '', 'mood': 'happy'}
+        resp = self.client.post('/page/', data)
+        # Should not redirect, should render form with errors
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'This field is required')
+        self.assertFalse(DiaryEntry.objects.filter(title='').exists())
