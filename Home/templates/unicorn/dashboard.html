@@ -1,0 +1,225 @@
+<div>
+    <!-- ================= STATISTICS ================= -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-custom p-4 text-center border-0 shadow-sm" style="background: linear-gradient(135deg, #4f46e5, #6366f1); color: white;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 opacity-75" style="font-size: 0.9rem; text-transform: uppercase;">Total Entries</h5>
+                    <i class="bi bi-journal-text fs-3"></i>
+                </div>
+                <h2 class="fw-extrabold mb-0 text-start">{{ stats.total_entries }}</h2>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-custom p-4 text-center border-0 shadow-sm" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 opacity-75" style="font-size: 0.9rem; text-transform: uppercase;">This Month</h5>
+                    <i class="bi bi-calendar-check fs-3"></i>
+                </div>
+                <h2 class="fw-extrabold mb-0 text-start">{{ stats.this_month }}</h2>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-custom p-4 text-center border-0 shadow-sm" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 opacity-75" style="font-size: 0.9rem; text-transform: uppercase;">Favorites</h5>
+                    <i class="bi bi-heart-fill fs-3"></i>
+                </div>
+                <h2 class="fw-extrabold mb-0 text-start">{{ stats.favorite_entries }}</h2>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card card-custom p-4 text-center border-0 shadow-sm" style="background: linear-gradient(135deg, #ec4899, #db2777); color: white;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0 opacity-75" style="font-size: 0.9rem; text-transform: uppercase;">Top Mood / Tag</h5>
+                    <i class="bi bi-stars fs-3"></i>
+                </div>
+                <div class="text-start">
+                    <span class="badge bg-white text-dark me-1" style="font-size: 0.75rem;">Mood: {{ stats.most_used_mood }}</span>
+                    <span class="badge bg-white text-dark" style="font-size: 0.75rem;">Tag: #{{ stats.most_used_tag }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SEARCH & FILTER ROW ================= -->
+    <div class="row g-3 align-items-center justify-content-between mb-4">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 rounded-start-4 shadow-sm py-2.5 px-3">
+                    <i class="bi bi-search text-muted"></i>
+                </span>
+                <input 
+                    type="text" 
+                    unicorn:model.debounce-250="search_query"
+                    class="form-control border-start-0 rounded-end-4 shadow-sm py-2.5 px-3" 
+                    placeholder="Search by title, content, or tags...">
+            </div>
+        </div>
+        
+        <div class="col-md-auto d-flex gap-2">
+            <button 
+                unicorn:click="toggle_show_only_favorites" 
+                class="btn rounded-pill px-4 py-2.5 shadow-sm fw-bold border {% if show_only_favorites %}btn-danger border-danger{% else %}btn-light bg-white border-secondary-subtle{% endif %}">
+                {% if show_only_favorites %}
+                    <i class="bi bi-heart-fill me-1"></i> Showing Favorites
+                {% else %}
+                    <i class="bi bi-heart me-1"></i> Show Favorites Only
+                {% endif %}
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= DIARY ENTRIES GRID ================= -->
+    {% if paginated_entries %}
+        <div class="row g-4">
+            {% for entry in paginated_entries %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="card card-custom h-100 shadow-sm d-flex flex-column" style="overflow: hidden;">
+                        
+                        <!-- Card Header -->
+                        <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="badge bg-light text-secondary border rounded-pill px-2.5 py-1 mb-2 small">
+                                    {{ entry.created_at|date:"M d, Y" }}
+                                </span>
+                                {% if entry.mood %}
+                                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2.5 py-1 mb-2 small">
+                                        {% if entry.mood == 'happy' %}😊 Happy
+                                        {% elif entry.mood == 'sad' %}😢 Sad
+                                        {% elif entry.mood == 'calm' %}😌 Calm
+                                        {% elif entry.mood == 'energetic' %}⚡ Energetic
+                                        {% elif entry.mood == 'angry' %}😠 Angry
+                                        {% elif entry.mood == 'anxious' %}😰 Anxious
+                                        {% else %}{{ entry.mood }}
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Favorite Toggle Button -->
+                            <button 
+                                unicorn:click="toggle_favorite({{ entry.id }})" 
+                                class="btn btn-link p-0 text-decoration-none transition-scale" 
+                                style="border: none; outline: none; background: transparent;">
+                                {% if entry.favorite %}
+                                    <i class="bi bi-heart-fill text-danger fs-4"></i>
+                                {% else %}
+                                    <i class="bi bi-heart text-muted fs-4"></i>
+                                {% endif %}
+                            </button>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body px-4 pb-2 pt-0 flex-grow-1">
+                            <h5 class="card-title fw-bold text-dark mb-2">{{ entry.title }}</h5>
+                            <p class="card-text text-secondary text-break" style="font-size: 0.95rem; line-height: 1.5;">
+                                {{ entry.content|truncatewords:24 }}
+                            </p>
+                            
+                            <!-- Tags list -->
+                            {% if entry.tags.all %}
+                                <div class="mt-3">
+                                    {% for tag in entry.tags.all %}
+                                        <span class="badge bg-secondary-subtle text-secondary rounded-pill me-1" style="font-size: 0.75rem;">
+                                            #{{ tag.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer bg-transparent border-0 pb-4 px-4 pt-2 mt-auto">
+                            {% if confirm_delete_id == entry.id %}
+                                <div class="alert alert-warning border-0 p-2.5 mb-0 rounded-4 d-flex align-items-center justify-content-between shadow-sm">
+                                    <span class="small fw-bold text-warning-emphasis">Confirm delete?</span>
+                                    <div class="d-flex gap-1.5">
+                                        <button 
+                                            unicorn:click="delete_entry({{ entry.id }})" 
+                                            class="btn btn-sm btn-danger rounded-pill px-3 py-1.5 fw-bold">
+                                            Delete
+                                        </button>
+                                        <button 
+                                            unicorn:click="cancel_delete" 
+                                            class="btn btn-sm btn-light border rounded-pill px-3 py-1.5 fw-bold">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="d-flex justify-content-between gap-2">
+                                    <a href="/entry/{{ entry.id }}/" class="btn btn-outline-primary btn-sm rounded-3 px-3 py-2 fw-semibold">
+                                        <i class="bi bi-eye-fill me-1"></i> View
+                                    </a>
+                                    <div class="d-flex gap-2">
+                                        <a href="/entry/{{ entry.id }}/edit/" class="btn btn-light btn-sm border rounded-3 px-3 py-2 fw-semibold text-muted">
+                                            <i class="bi bi-pencil-fill me-1"></i> Edit
+                                        </a>
+                                        <button 
+                                            unicorn:click="confirm_delete({{ entry.id }})" 
+                                            class="btn btn-light btn-sm border border-danger-subtle text-danger rounded-3 px-3 py-2 fw-semibold">
+                                            <i class="bi bi-trash-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ================= PAGINATION CONTROLS ================= -->
+        {% if paginated_entries.paginator.num_pages > 1 %}
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-5">
+                <button 
+                    unicorn:click="set_page({{ paginated_entries.previous_page_number }})"
+                    class="btn btn-light border shadow-sm rounded-pill px-4 py-2 fw-bold d-flex align-items-center {% if not paginated_entries.has_previous %}disabled opacity-50{% endif %}"
+                    {% if not paginated_entries.has_previous %}disabled{% endif %}>
+                    <i class="bi bi-chevron-left me-1"></i> Previous
+                </button>
+                
+                <span class="text-muted fw-semibold">
+                    Page {{ paginated_entries.number }} of {{ paginated_entries.paginator.num_pages }}
+                </span>
+                
+                <button 
+                    unicorn:click="set_page({{ paginated_entries.next_page_number }})"
+                    class="btn btn-light border shadow-sm rounded-pill px-4 py-2 fw-bold d-flex align-items-center {% if not paginated_entries.has_next %}disabled opacity-50{% endif %}"
+                    {% if not paginated_entries.has_next %}disabled{% endif %}>
+                    Next <i class="bi bi-chevron-right ms-1"></i>
+                </button>
+            </div>
+        {% endif %}
+
+    {% else %}
+        <!-- ================= EMPTY STATES ================= -->
+        <div class="card card-custom p-5 text-center border-0 shadow-sm mt-4">
+            <div class="my-4">
+                {% if show_only_favorites %}
+                    <i class="bi bi-heartbreak text-danger mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="fw-bold">No Favorite Entries</h3>
+                    <p class="text-muted mb-4">You haven't marked any of your diary entries as favorite yet.</p>
+                    <button unicorn:click="toggle_show_only_favorites" class="btn btn-primary-custom px-4">Show All Entries</button>
+                {% elif search_query %}
+                    <i class="bi bi-search-heart text-secondary mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="fw-bold">No Results Found</h3>
+                    <p class="text-muted mb-4">We couldn't find any entries matching "<strong>{{ search_query }}</strong>".</p>
+                    <button unicorn:click="set('search_query', '')" class="btn btn-primary-custom px-4">Clear Search</button>
+                {% else %}
+                    <i class="bi bi-journal-x text-secondary mb-3" style="font-size: 4rem;"></i>
+                    <h3 class="fw-bold">Your Diary is Empty</h3>
+                    <p class="text-muted mb-4">Every day is a new page in your story. Start capture your memories now.</p>
+                    <a href="/page/" class="btn btn-primary-custom px-4">
+                        <i class="bi bi-plus-circle-fill me-1"></i> Write Your First Entry
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
